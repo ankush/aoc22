@@ -21,7 +21,7 @@ fn get_elf_foods(inventory: &str) -> Vec<i32> {
 fn part1(inventory: &str) -> i32 {
     let elf_foods = get_elf_foods(inventory);
 
-    elf_foods.iter().max().unwrap().to_owned()
+    elf_foods.iter().max().unwrap_or(&0).to_owned()
 }
 
 
@@ -49,6 +49,7 @@ mod tests {
             40
             1";
         assert_eq!(part1(TEST_INPUT), 42);
+        assert_eq!(part1(INPUT), 72478);
     }
 
     #[test]
@@ -66,6 +67,7 @@ mod tests {
             1
             1";
         assert_eq!(part2(TEST_INPUT), 42);
+        assert_eq!(part2(INPUT),  210367);
     }
 }
 

@@ -1,0 +1,15 @@
+on: push
+
+name: Continuous integration cause why not
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run tests
+        run: |
+          cd ${GITHUB_WORKSPACE}
+          find . -name Cargo.toml | xargs -n1 cargo test --manifest-path
