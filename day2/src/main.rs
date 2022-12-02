@@ -1,5 +1,6 @@
 fn main() {
     println!("Total score: {}", part1(INPUT));
+    println!("Total score: {}", part2(INPUT));
 }
 
 fn part1(input: &str) -> i32 {
@@ -7,7 +8,16 @@ fn part1(input: &str) -> i32 {
     games.iter().map(|g| g.score()).sum()
 }
 
-#[derive(PartialEq)]
+fn part2(input: &str) -> i32 {
+    let strategies = get_strategies(input);
+    strategies
+        .iter()
+        .map(|s| s.construct_game())
+        .map(|g| g.score())
+        .sum()
+}
+
+#[derive(PartialEq, Copy, Clone)]
 enum Move {
     Rocks,
     Paper,
@@ -20,6 +30,24 @@ impl Move {
             Move::Rocks => 1,
             Move::Paper => 2,
             Move::Scissors => 3,
+        }
+    }
+
+    // What this move beats
+    fn beats(&self) -> Move {
+        match *self {
+            Move::Rocks => Move::Scissors,
+            Move::Paper => Move::Rocks,
+            Move::Scissors => Move::Paper,
+        }
+    }
+
+    // can't think of elegant solution here.
+    fn loses(&self) -> Move {
+        match *self {
+            Move::Rocks => Move::Paper,
+            Move::Paper => Move::Scissors,
+            Move::Scissors => Move::Rocks,
         }
     }
 }
@@ -48,10 +76,8 @@ struct Game {
 impl Game {
     fn get_outcome(&self) -> Outcome {
         match (&self.them, &self.us) {
-            (Move::Rocks, Move::Paper)
-            | (Move::Scissors, Move::Rocks)
-            | (Move::Paper, Move::Scissors) => Outcome::Win,
             (them, us) if { us == them } => Outcome::Draw,
+            (them, us) if us.beats() == *them => Outcome::Win,
             _ => Outcome::Loss,
         }
     }
@@ -61,11 +87,42 @@ impl Game {
     }
 }
 
+struct Stratagy {
+    expected_move: Move,
+    outcome: Outcome,
+}
+
+impl Stratagy {
+    fn suggest_move(&self) -> Move {
+        match (&self.outcome, &self.expected_move) {
+            (Outcome::Loss, them) => them.beats(),
+            (Outcome::Win, them) => them.loses(),
+            (Outcome::Draw, them) => them.clone(),
+        }
+    }
+
+    fn construct_game(&self) -> Game {
+        Game {
+            them: self.expected_move,
+            us: self.suggest_move(),
+        }
+    }
+}
+
 fn map_code_to_move(code: &str) -> Move {
     match code {
         "A" | "X" => Move::Rocks,
         "B" | "Y" => Move::Paper,
         "C" | "Z" => Move::Scissors,
+        _ => panic!("Unknown code"),
+    }
+}
+
+fn map_code_to_outcome(code: &str) -> Outcome {
+    match code {
+        "X" => Outcome::Loss,
+        "Y" => Outcome::Draw,
+        "Z" => Outcome::Win,
         _ => panic!("Unknown code"),
     }
 }
@@ -85,18 +142,39 @@ fn get_games(input: &str) -> Vec<Game> {
     games
 }
 
+fn get_strategies(input: &str) -> Vec<Stratagy> {
+    let mut games = vec![];
+
+    for gamestr in input.lines() {
+        let moves: Vec<&str> = gamestr.split_whitespace().collect();
+        let game = Stratagy {
+            expected_move: map_code_to_move(moves[0]),
+            outcome: map_code_to_outcome(moves[1]),
+        };
+        games.push(game);
+    }
+
+    games
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    const TEST_INPUT: &str = "A Y
+B X
+C Z";
+
     #[test]
     fn part1_works() {
         assert_eq!(part1(""), 0);
-
-        const TEST_INPUT: &str = "A Y
-B X
-C Z";
         assert_eq!(part1(TEST_INPUT), 15);
+    }
+
+    #[test]
+    fn part2_works() {
+        assert_eq!(part2(""), 0);
+        assert_eq!(part2(TEST_INPUT), 12);
     }
 }
 
