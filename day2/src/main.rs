@@ -75,10 +75,12 @@ struct Game {
 
 impl Game {
     fn get_outcome(&self) -> Outcome {
-        match (&self.them, &self.us) {
-            (them, us) if { us == them } => Outcome::Draw,
-            (them, us) if us.beats() == *them => Outcome::Win,
-            _ => Outcome::Loss,
+        if self.them == self.us {
+            Outcome::Draw
+        } else if self.them == self.us.beats() {
+            Outcome::Win
+        } else {
+            Outcome::Loss
         }
     }
 
@@ -94,10 +96,10 @@ struct Stratagy {
 
 impl Stratagy {
     fn suggest_move(&self) -> Move {
-        match (&self.outcome, &self.expected_move) {
-            (Outcome::Loss, them) => them.beats(),
-            (Outcome::Win, them) => them.loses(),
-            (Outcome::Draw, them) => them.clone(),
+        match &self.outcome {
+            Outcome::Loss => self.expected_move.beats(),
+            Outcome::Win => self.expected_move.loses(),
+            Outcome::Draw => self.expected_move.clone(),
         }
     }
 
@@ -114,7 +116,7 @@ fn map_code_to_move(code: &str) -> Move {
         "A" | "X" => Move::Rocks,
         "B" | "Y" => Move::Paper,
         "C" | "Z" => Move::Scissors,
-        _ => panic!("Unknown code"),
+        _ => panic!("Unknown code {}", code),
     }
 }
 
@@ -123,7 +125,7 @@ fn map_code_to_outcome(code: &str) -> Outcome {
         "X" => Outcome::Loss,
         "Y" => Outcome::Draw,
         "Z" => Outcome::Win,
-        _ => panic!("Unknown code"),
+        _ => panic!("Unknown code {}", code),
     }
 }
 
