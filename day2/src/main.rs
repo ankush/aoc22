@@ -26,6 +26,8 @@ enum Move {
 }
 
 impl Move {
+    const ALL_MOVES: [Move; 3]= [Move::Rocks, Move::Paper, Move::Scissors];
+
     fn score(&self) -> i32 {
         match *self {
             Move::Rocks => 1,
@@ -35,22 +37,35 @@ impl Move {
     }
 
     // What this move beats
-    fn beats(&self) -> Move {
-        match *self {
+    fn beats(self) -> Move {
+        match self {
             Move::Rocks => Move::Scissors,
             Move::Paper => Move::Rocks,
             Move::Scissors => Move::Paper,
         }
     }
 
-    // can't think of elegant solution here.
-    fn loses(&self) -> Move {
-        match *self {
-            Move::Rocks => Move::Paper,
-            Move::Paper => Move::Scissors,
-            Move::Scissors => Move::Rocks,
-        }
+    // copied from https://fasterthanli.me/series/advent-of-code-2022/part-2
+    fn winning_move(self) -> Move {
+        Self::ALL_MOVES
+            .iter()
+            .copied()
+            .find(|m| m.beats() == self)
+            .unwrap()
     }
+
+    fn losing_move(self) -> Move {
+        Self::ALL_MOVES
+            .iter()
+            .copied()
+            .find(|m| *m == self.beats())
+            .unwrap()
+    }
+
+    fn drawing_move(self) -> Move {
+        self
+    }
+    // end copied
 }
 
 enum Outcome {
@@ -98,9 +113,9 @@ struct Stratagy {
 impl Stratagy {
     fn suggest_move(&self) -> Move {
         match &self.outcome {
-            Outcome::Loss => self.expected_move.beats(),
-            Outcome::Win => self.expected_move.loses(),
-            Outcome::Draw => self.expected_move.clone(),
+            Outcome::Loss => self.expected_move.losing_move(),
+            Outcome::Win => self.expected_move.winning_move(),
+            Outcome::Draw => self.expected_move.drawing_move(),
         }
     }
 
