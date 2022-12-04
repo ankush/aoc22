@@ -4,7 +4,8 @@ fn main() {
     color_eyre::install().unwrap();
 
     let input = std::fs::read_to_string("./src/input.in").unwrap();
-    println!("Fully overlapping paris {}", part1(&input));
+    println!("Fully overlapping pairs {}", part1(&input));
+    println!("Any overlapping pairs {}", part2(&input));
 }
 
 fn part1(input: &str) -> i32 {
@@ -13,6 +14,15 @@ fn part1(input: &str) -> i32 {
     assignments
         .iter()
         .filter(|a| a.first.contains(&a.second) || a.second.contains(&a.first))
+        .count() as i32
+}
+
+fn part2(input: &str) -> i32 {
+    let assignments = parse_assignments(input);
+
+    assignments
+        .iter()
+        .filter(|a| a.first.overlap(&a.second))
         .count() as i32
 }
 
@@ -29,6 +39,9 @@ struct Assignment {
 impl Range {
     fn contains(&self, other: &Self) -> bool {
         self.start <= other.start && self.end >= other.end
+    }
+    fn overlap(&self, other: &Self) -> bool {
+        self.start <= other.end && other.start <= self.end
     }
 }
 
@@ -82,6 +95,12 @@ mod tests {
     fn part1_works() {
         assert_eq!(part1(""), 0);
         assert_eq!(part1(TEST_INPUT), 2);
+    }
+
+    #[test]
+    fn part2_works() {
+        assert_eq!(part2(""), 0);
+        assert_eq!(part2(TEST_INPUT), 4);
     }
 
     #[test]
