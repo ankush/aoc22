@@ -5,11 +5,25 @@ use std::collections::HashMap;
 fn main() {
     let input = std::fs::read_to_string("./src/input.in").unwrap();
     println!("{}", part1(&input));
+    println!("{}", part2(&input));
 }
 
 fn part1(input: &str) -> String {
     let (mut arrangement, moves) = parse_input(input);
 
+    crane_9000(&mut arrangement, moves);
+    get_top_crates(&arrangement)
+}
+
+fn part2(input: &str) -> String {
+    let (mut arrangement, moves) = parse_input(input);
+
+    crane_9001(&mut arrangement, moves);
+    get_top_crates(&arrangement)
+}
+
+
+fn crane_9000(arrangement:  &mut HashMap<i32, Vec<char>>, moves: Vec<Move>) {
     for m in moves {
         for _ in 0..m.count {
             let from_stack = arrangement.get_mut(&m.from).unwrap();
@@ -18,7 +32,24 @@ fn part1(input: &str) -> String {
             to_stack.push(crate_to_move);
         }
     }
+}
 
+fn crane_9001(arrangement:  &mut HashMap<i32, Vec<char>>, moves: Vec<Move>) {
+    for m in moves {
+        let mut temp = vec![];
+        for _ in 0..m.count {
+            let from_stack = arrangement.get_mut(&m.from).unwrap();
+            temp.push(from_stack.pop().unwrap());
+        }
+
+        let to_stack = arrangement.get_mut(&m.to).unwrap();
+        for t in temp.iter().rev() {
+            to_stack.push(*t);
+        }
+    }
+}
+
+fn get_top_crates(arrangement:  &HashMap<i32, Vec<char>>) -> String {
     let mut keys: Vec<&i32> = arrangement.keys().collect();
     keys.sort();
 
@@ -28,6 +59,7 @@ fn part1(input: &str) -> String {
         .into_iter()
         .collect()
 }
+
 
 struct Move {
     count: i32,
@@ -95,5 +127,10 @@ move 1 from 1 to 2";
     #[test]
     fn part1_works() {
         assert_eq!(part1(TEST_INPUT), "CMZ");
+    }
+
+    #[test]
+    fn part2_works() {
+        assert_eq!(part2(TEST_INPUT), "MCD");
     }
 }
