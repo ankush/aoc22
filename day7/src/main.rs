@@ -5,6 +5,7 @@ use std::collections::HashMap;
 fn main() {
     let input = std::fs::read_to_string("./src/input.in").unwrap();
     println!("{}", part1(&input));
+    println!("{}", part2(&input));
 }
 
 type DirStack<'a> = Vec<&'a str>;
@@ -19,6 +20,24 @@ fn part1(input: &str) -> i32 {
         .filter(|(_, size)| **size < 100000)
         .map(|(_, size)| size)
         .sum()
+}
+
+const DISK_CAPACITY: i32 = 70000000;
+const REQUIRED_CAPACITY: i32 = 30000000;
+
+fn part2(input: &str) -> i32 {
+    let lines = parse_input(input);
+    let sizes = construct_dir_map(&lines);
+
+    let unused_space = DISK_CAPACITY - *sizes.get("/").unwrap();
+    let required_cleanup = REQUIRED_CAPACITY - unused_space;
+
+    *sizes
+        .iter()
+        .filter(|(_, size)| **size > required_cleanup)
+        .map(|(_, size)| size)
+        .min()
+        .unwrap()
 }
 
 fn construct_dir_map(lines: &Vec<ShellLine>) -> DirMap {
@@ -132,5 +151,10 @@ $ ls
     #[test]
     fn part1_works() {
         assert_eq!(part1(TEST_INPUT), 95437);
+    }
+
+    #[test]
+    fn part2_works() {
+        assert_eq!(part2(TEST_INPUT), 24933642);
     }
 }
