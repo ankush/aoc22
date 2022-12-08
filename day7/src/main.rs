@@ -1,5 +1,3 @@
-#![allow(dead_code, unused_variables)]
-
 use std::collections::HashMap;
 
 fn main() {
@@ -15,11 +13,7 @@ fn part1(input: &str) -> i32 {
     let lines = parse_input(input);
     let sizes = construct_dir_map(&lines);
 
-    sizes
-        .iter()
-        .filter(|(_, size)| **size < 100000)
-        .map(|(_, size)| size)
-        .sum()
+    sizes.values().filter(|v| **v < 100000).sum()
 }
 
 const DISK_CAPACITY: i32 = 70000000;
@@ -33,9 +27,8 @@ fn part2(input: &str) -> i32 {
     let required_cleanup = REQUIRED_CAPACITY - unused_space;
 
     *sizes
-        .iter()
-        .filter(|(_, size)| **size > required_cleanup)
-        .map(|(_, size)| size)
+        .values()
+        .filter(|v| **v > required_cleanup)
         .min()
         .unwrap()
 }
@@ -70,7 +63,7 @@ fn update_sizes(sizes: &mut HashMap<String, i32>, pwd: &DirStack, size: i32) {
         let dir = format!("/{}", &pwd[..i].join("/"));
 
         let total_size = sizes.entry(dir).or_insert(0);
-        *total_size = *total_size + size;
+        *total_size += size;
     }
 }
 
@@ -90,6 +83,7 @@ enum ShellLine<'a> {
         cmd: &'a str,
         arg: Option<&'a str>,
     },
+    #[allow(dead_code)]
     File {
         is_dir: bool,
         size: i32,
