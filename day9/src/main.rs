@@ -3,11 +3,53 @@ use std::collections::HashSet;
 fn main() {
     let input = std::fs::read_to_string("./src/input.in").unwrap();
     println!("{}", part1(&input));
+    println!("{}", part2(&input));
 }
 
 fn part1(input: &str) -> i32 {
     let movements = parse_input(input);
-    get_tail_visits(movements).len() as i32
+
+    let mut head = Point(0, 0);
+    let mut tail = Point(0, 0);
+
+    let mut visited: HashSet<Point> = HashSet::new();
+
+    for m in movements {
+        let vector = m.direction.unit_vector();
+        for _ in 0..m.magnitude {
+            head.displace(&vector);
+            tail.follow(&head);
+            visited.insert(tail.clone());
+        }
+    }
+
+    visited.len() as i32
+}
+
+fn part2(input: &str) -> i32 {
+    let movements = parse_input(input);
+
+    let mut rope = [Point(0, 0); 10];
+    let mut visited: HashSet<Point> = HashSet::new();
+
+    for m in movements {
+        let vector = m.direction.unit_vector();
+        for _ in 0..m.magnitude {
+
+            let head = rope.first_mut().unwrap();
+            head.displace(&vector);
+
+            for i in 1..rope.len() {
+                let leader = rope.get(i - 1).unwrap().clone(); // fought so hard but BC won.
+                let follower = rope.get_mut(i).unwrap();
+                follower.follow(&leader);
+            }
+
+            visited.insert(rope.last().unwrap().clone());
+        }
+    }
+
+    visited.len() as i32
 }
 
 #[derive(Debug)]
@@ -19,7 +61,7 @@ enum Direction {
 }
 
 // x-y point
-#[derive(Debug, PartialEq, Eq, Clone, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Hash, Copy)]
 struct Point(i32, i32);
 
 // Allow adding a point to a point.
@@ -106,24 +148,6 @@ fn parse_input(input: &str) -> Vec<Movement> {
     input.lines().map(|line| Movement::from(line)).collect()
 }
 
-fn get_tail_visits(moves: Vec<Movement>) -> HashSet<Point> {
-    let mut head = Point(0, 0);
-    let mut tail = Point(0, 0);
-
-    let mut visited : HashSet<Point> = HashSet::new();
-
-    for m in moves {
-        let vector = m.direction.unit_vector();
-        for _ in 0..m.magnitude {
-            head.displace(&vector);
-            tail.follow(&head);
-            visited.insert(tail.clone());
-        }
-    }
-
-    visited
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -140,5 +164,10 @@ R 2";
     #[test]
     fn part1_works() {
         assert_eq!(part1(TEST_INPUT), 13);
+    }
+
+    #[test]
+    fn part2_works() {
+        assert_eq!(part2(TEST_INPUT), 1);
     }
 }
