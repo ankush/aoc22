@@ -1,6 +1,7 @@
 fn main() {
     let input = std::fs::read_to_string("./src/input.in").unwrap();
     println!("{}", part1(&input));
+    part2(&input);
 }
 
 const IMPORTANT_CYCLES: [i32; 6] = [20, 60, 100, 140, 180, 220];
@@ -14,6 +15,27 @@ fn part1(input: &str) -> i32 {
         .map(|cycle| history[cycle as usize - 1] * cycle)
         .iter()
         .sum()
+}
+
+fn part2(input: &str) {
+    let instructions = parse_input(input);
+    let history = execute_instructions(&instructions);
+
+    let mut crt = vec!['.'; 240];
+
+    for (cycle, x) in history.iter().enumerate() {
+        let x_crt = (cycle as i32) % 40;
+        if (x-1..=x+1).contains(&x_crt) {
+            crt[cycle] = '#';
+        }
+    }
+
+    let output: Vec<String> = crt
+        .chunks(40)
+        .map(|chunk| chunk.iter().collect::<String>())
+        .collect();
+
+    dbg!(output);  // ¯\_(ツ)_/¯
 }
 
 fn execute_instructions(instructions: &Vec<Instruction>) -> Vec<i32> {
